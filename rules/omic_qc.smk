@@ -9,7 +9,7 @@ rule insertion_profile:
         "rseqc/insertion_profile/{sample}/{sample}.insertion_profile.R2.pdf",
         "rseqc/insertion_profile/{sample}/{sample}.insertion_profile.xls",
     conda:
-        "../envs/rseqc.yaml"
+        "../envs/rseqc_singularity.yaml"
     shell:
         "insertion_profile.py -s '{params.seq_layout}' -i {input} -o rseqc/insertion_profile/{wildcards.sample}/{wildcards.sample}"
 
@@ -24,7 +24,7 @@ rule inner_distance:
         "rseqc/inner_distance/{sample}/{sample}.inner_distance_plot.pdf",
         "rseqc/inner_distance/{sample}/{sample}.inner_distance_freq.txt",
     conda:
-        "../envs/rseqc.yaml"
+        "../envs/rseqc_singularity.yaml"
     shell:
         "inner_distance.py -i {input} -o rseqc/inner_distance/{wildcards.sample}/{wildcards.sample} -r {params.bed}"
 
@@ -39,7 +39,7 @@ rule clipping_profile:
         "rseqc/clipping_profile/{sample}/{sample}.clipping_profile.R2.pdf",
         "rseqc/clipping_profile/{sample}/{sample}.clipping_profile.xls",
     conda:
-        "../envs/rseqc.yaml"
+        "../envs/rseqc_singularity.yaml"
     shell:
         "clipping_profile.py -i {input} -s '{params.seq_layout}' -o rseqc/clipping_profile/{wildcards.sample}/{wildcards.sample}"
 
@@ -51,7 +51,7 @@ rule read_distribution:
     output:
         "rseqc/read_distribution/{sample}/{sample}.read_distribution.txt",
     conda:
-        "../envs/rseqc.yaml"
+        "../envs/rseqc_singularity.yaml"
     shell:
         "read_distribution.py -i {input} -r {params.bed} > {output}"
 
@@ -63,7 +63,7 @@ rule read_GC:
         "rseqc/read_GC/{sample}/{sample}.GC_plot.r",
         "rseqc/read_GC/{sample}/{sample}.GC_plot.pdf",
     conda:
-        "../envs/rseqc.yaml"
+        "../envs/rseqc_singularity.yaml"
     shell:
         "read_GC.py -i {input} -o rseqc/read_GC/{wildcards.sample}/{wildcards.sample}"
 
