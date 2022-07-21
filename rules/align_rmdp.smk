@@ -11,8 +11,7 @@ rule fastp:
         "logs/fastp/{sample}.fastp.json"
     threads: 8
     shell:
-        "fastp -i {input.fwd} -I {input.rev} -o {output.fwd} -O {output.rev} "
-        "--detect_adapter_for_pe --thread {threads} -j {log} -h /dev/null"
+        "fastp -i {input.fwd} -I {input.rev} -o {output.fwd} -O {output.rev} --detect_adapter_for_pe --thread {threads} -j {log} -h /dev/null"
 
 rule fastqscreen:
     input:
@@ -99,6 +98,8 @@ rule star_statistics:
         expand("samples/star/{sample}_bam/Log.final.out",sample=SAMPLES)
     output:
         "results/tables/{project_id}_STAR_mapping_statistics.txt".format(project_id = config["project_id"])
+    conda:
+        "../envs/custom_stats.yaml"
     script:
         "../scripts/compile_star_log.py"
 
@@ -110,6 +111,8 @@ rule compile_star_counts:
         samples=SAMPLES
     output:
         "data/{project_id}_counts.txt".format(project_id=config["project_id"])
+    conda:
+        "../envs/custom_stats.yaml"
     script:
         "../scripts/compile_star_counts.py"
 
@@ -122,6 +125,8 @@ rule filter_counts:
         anno=config["filter_anno"],
         biotypes=config["biotypes"],
         mito=config['mito']
+    conda:
+        "../envs/custom_stats.yaml"
     script:
         "../scripts/RNAseq_filterCounts.R"
 
