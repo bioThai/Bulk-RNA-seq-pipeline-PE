@@ -64,8 +64,16 @@ saveRDS(dds, file=output)
 # colData and countData must have the same sample order, but this is ensured
 # by the way we create the count matrix
 dds <- dds[ rowSums(counts(dds)) > 1, ]
+
 # normalization and preprocessing
-dds <- DESeq(dds, parallel=parallel)
+
+# if running pipeline in Singularity container, set parallel=FALSE or else DESeq will hang indefinitely and not finish
+# might have something to do with container OS not being able to interact properly with HPC cluster environment/hardware when multithreading DESeq?
+dds <- DESeq(dds, parallel=FALSE)
+
+# if running pipeline directly in HPC cluster environment (not in a container), run this version of DESeq() fxn instead:
+# dds <- DESeq(dds, parallel=parallel)
+
 saveRDS(dds, file=output)
 
 # obtain normalized counts
