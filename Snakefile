@@ -3,7 +3,7 @@ __email__ = "estabroj@ohsu.edu"
 __license__ = "MIT"
 
 """Computation Hub omic data processing pipeline"""
-"""Edits by Garth Kong at OHSU"""
+"""Edits by Garth Kong and Thai Nguyen at OHSU"""
 
 
 import datetime
@@ -63,6 +63,9 @@ def format_plot_columns():
 for sample in SAMPLES:
     message("Sample " + sample + " will be processed")
 
+# define container inside which every rule/environment in pipeline will be run
+# container: "library://conthainer/global_container/global_container:latest"
+container: "docker://condaforge/mambaforge:4.12.0-0"
 
 rule all:
     input:
