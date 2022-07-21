@@ -39,7 +39,7 @@ git clone git@github.com:maxsonBraunLab/Bulk-RNA-seq-pipeline-PE.git
 cd Bulk-RNA-seq-pipeline-PE/samples/raw
 
 # symlink your FASTQ files (gzipped) to this directory
-for file in (find <absolute/path/to/relevant/folder> -name "*.gz" | sort); do
+for file in $(find <absolute/path/to/relevant/folder> -name "*.gz" | sort); do
     echo "symlinking $file"
     ln -s $file .
 done
