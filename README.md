@@ -72,45 +72,73 @@ To relate sample to covariates (e.g. condition), please fill out the `data/metad
 
 # 4. Set up SLURM integration
 
-Continue forward if you don't have a [SLURM profile](https://github.com/Snakemake-Profiles/slurm).
+Do this step if you don't have a [SLURM profile](https://github.com/Snakemake-Profiles/slurm) set up for Singularity-containerized pipelines.
 
-Download the `slurm` folder from this [repository](https://github.com/gartician/slurm-snakemake-profile) and copy the entire thing to `~/.config/snakemake`. 
+Download the `slurm_singularity` folder from this [repository](https://github.com/bioThai/slurm-snakemake-profile) and copy the entire thing to `~/.config/snakemake`. 
 
 Your file configuration for SLURM should be as follows:
 ```
-~/.config/snakemake/slurm/<files>
+~/.config/snakemake/slurm_singularity/<files>
 ```
 
-Change the file permissions for the scripts in the `slurm` folder so that they are executable. To do this, run:
+Change the file permissions for the scripts in the `slurm_singularity` folder so that they are executable. To do this, run:
 ```
-chmod +x ~/.config/snakemake/slurm/slurm*
-```
-
-
-# 5. Run the pipeline
-
-First do a dry-run of snakemake to ensure proper execution before submitting it to the cluster.
-
-```
-$ snakemake -np --verbose
+chmod +x ~/.config/snakemake/slurm_singularity/slurm*
 ```
 
-Once your files are symbolically linked, you can submit the jobs batch-style to exacloud via your terminal window. This is most appropriate when running many heavy processes like read alignment.
+
+# 5. Run the pipeline (Singularity-containerized version)
+
+__For Exacloud users:__ As of 8/22/22, Singularity is currently only available on interactive compute nodes. To run the Singularity-containerized version of this pipeline, you will need to be on an interactive compute node instead of a head node (i.e., not on exahead1 or exahead2) on Exacloud. You will then need to activate Singularity before running the pipeline:
 
 ```
-$ snakemake -j <n jobs> --use-conda --profile slurm --cluster-config cluster.yaml
+# use an interactive compute node with 4 cores
+srun --pty --time=24:00:00 -c 4 bash
+
+# activate Singularity on Exacloud
+module load /etc/modulefiles/singularity/current
+```
+
+Navigate to the main directory of the pipeline (where the `Snakefile` is located). 
+
+Then do a dry-run of snakemake to ensure proper execution before submitting it to the cluster.  
+
+```
+# provide absolute path to folder containing all raw sequencing files (not the symlinks)
+raw_data_path="/home/groups/MaxsonLab/<path>/<to>/<raw_FASTQ_folder>/"
+
+# provide absolute path to folder containing all index files for alignment (example below)
+index_files="/home/groups/MaxsonLab/indices/"
+
+# do a snakemake dry-run (include the above folder paths so Singularity can access them)
+snakemake -np --verbose --use-singularity --singularity-args "--bind ../Bulk-RNA-seq-pipeline-PE:/Bulk-RNA-seq-pipeline-PE,$raw_data_path,$index_files"
+```
+
+Once your files are symbolically linked, you can submit the jobs batch-style to Exacloud via your terminal window. This is most appropriate when running many heavy processes like read alignment. For computationally-heavy processes that will take time, it is recommended that you run the pipeline using the `submit_snakemake.sh` script as an Exacloud batch job instead of running the snakemake command directly in your terminal. For reference, the `submit_snakemake.sh` script is a convenient way to execute the following command:
+```
+snakemake -j <n jobs> --use-singularity --singularity-args "--bind ../Bulk-RNA-seq-pipeline-PE:/Bulk-RNA-seq-pipeline-PE,$raw_data_path,$index_files" --use-conda --profile slurm_singularity --cluster-config cluster.yaml
+```
+
+To execute `submit_snakemake.sh` and run the pipeline:
+
+```
+# replace <n jobs> with the number of active cluster jobs you'd like to run at once (e.g., 100) 
+sbatch submit_snakemake.sh <n jobs> $raw_data_path $index_files
 ```
 
 To see how the job is running, look at your queue.
 
 ```
-$ squeue -u your_username
+squeue -u your_username
 ```
 
-If you need to re-run light processes such as differential expression and quality control, just remove the profile and cluster-config flags like this:
+If you need to re-run light processes such as differential expression and quality control, you can run Snakemake directly on the command line. Just remove the profile and cluster-config flags as follows, and specify the Snakemake rule you'd like to re-run:
 
 ```
-$ snakemake -j <n cores> --use-conda
+# replace <n cores> with the number of cores you'd like to use (e.g., 8) 
+# replace <snakemake rule to re-run> with the Snakemake ruile you'd like to re-run
+
+snakemake -j <n cores> --use-singularity --singularity-args "--bind ../Bulk-RNA-seq-pipeline-PE:/Bulk-RNA-seq-pipeline-PE,$raw_data_path,$index_files" --use-conda --forcerun <snakemake rule to re-run>
 ```
 
 `j` in this 'interactive' context means to use `n` amount of local cores, while the 'batch' context specifies number of active jobs!
